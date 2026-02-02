@@ -5,57 +5,131 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pricing Plans</title>
     <link rel="stylesheet" href="styles.css">
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body>
-    <div class="cards-container">
-        <div class="card">
-            <h1 class="card-title">Pickles</h1>
-            <p class="card-price">Free</p>
-            <div class="card-content">
-                <p class="includes-text">Includes:</p>
-                <ul class="features-list">
-                    <li>
-                        <span class="checkmark">✓</span>
-                        No credit card required
-                    </li>
-                    <li>
-                        <span class="checkmark">✓</span>
-                        Limited Agent requests
-                    </li>
-                    <li>
-                        <span class="checkmark">✓</span>
-                        Limited Tab completions
-                    </li>
-                </ul>
-            </div>
-            <button class="download-button">Download</button>
-        </div>
-        <div class="card">
-            <h1 class="card-title">Cheese</h1>
-            <p class="card-price">$20/mo.</p>
-            <div class="card-content">
-                <p class="includes-text">Everything in Hobby, plus:</p>
-                <ul class="features-list">
-                    <li>
-                        <span class="checkmark">✓</span>
-                        Extended limits on Agent
-                    </li>
-                    <li>
-                        <span class="checkmark">✓</span>
-                        Unlimited Tab completions
-                    </li>
-                    <li>
-                        <span class="checkmark">✓</span>
-                        Background Agents
-                    </li>
-                    <li>
-                        <span class="checkmark">✓</span>
-                        Maximum context windows
-                    </li>
-                </ul>
-            </div>
-            <button class="download-button">Get Pro</button>
-        </div>
-    </div>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useRef } = React;
+
+        function FancyButton({ children, isPurple }) {
+            const [bubble, setBubble] = useState({ x: 0, y: 0, show: false });
+            const btnRef = useRef(null);
+
+            const handleMouseMove = (e) => {
+                if (!btnRef.current) return;
+                const rect = btnRef.current.getBoundingClientRect();
+                setBubble({
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top,
+                    show: true,
+                });
+            };
+
+            const handleMouseLeave = () => setBubble((b) => ({ ...b, show: false }));
+
+            return (
+                <button
+                    ref={btnRef}
+                    className={`download-button ${isPurple ? 'download-button--purple' : ''}`}
+                    onMouseMove={handleMouseMove}
+                    onMouseLeave={handleMouseLeave}
+                >
+                    <span
+                        className={`button-bubble ${bubble.show ? 'button-bubble--open' : ''}`}
+                        style={{
+                            left: bubble.x,
+                            top: bubble.y,
+                        }}
+                    />
+                    <span className="button-text">{children}</span>
+                </button>
+            );
+        }
+
+        function Card({ id, title, price, includesText, features, buttonText, isSpanRow, isHovered, onHover }) {
+            const cardClass = `card ${isSpanRow ? 'card-span-row' : ''} ${isHovered ? 'card-hovered' : ''}`;
+            return (
+                <div
+                    className={cardClass}
+                    onMouseEnter={() => onHover(id)}
+                    onMouseLeave={() => onHover(null)}
+                >
+                    <h1 className="card-title">{title}</h1>
+                    <p className="card-price">{price}</p>
+                    <div className="card-content">
+                        <p className="includes-text">{includesText}</p>
+                        <ul className="features-list">
+                            {features.map((text, i) => (
+                                <li key={i}>
+                                    <span className="checkmark">✓</span>
+                                    {text}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                    <FancyButton isPurple={isSpanRow}>{buttonText}</FancyButton>
+                </div>
+            );
+        }
+
+        function App() {
+            const [hoveredCard, setHoveredCard] = useState(null);
+
+            return (
+                <div className="cards-container">
+                    <div className="cards-row">
+                        <Card
+                            id="pickles"
+                            title="Pickles"
+                            price="Free"
+                            includesText="Includes:"
+                            features={[
+                                'No credit card required',
+                                'Limited Agent requests',
+                                'Limited Tab completions',
+                            ]}
+                            buttonText="Download"
+                            isSpanRow={false}
+                            isHovered={hoveredCard === 'pickles'}
+                            onHover={setHoveredCard}
+                        />
+                        <Card
+                            id="cheese"
+                            title="Cheese"
+                            price="$20/mo."
+                            includesText="Everything in Hobby, plus:"
+                            features={[
+                                'Extended limits on Agent',
+                                'Unlimited Tab completions',
+                                'Background Agents',
+                                'Maximum context windows',
+                            ]}
+                            buttonText="Get Pro"
+                            isSpanRow={false}
+                            isHovered={hoveredCard === 'cheese'}
+                            onHover={setHoveredCard}
+                        />
+                    </div>
+                    <Card
+                        id="meat"
+                        title="Meat"
+                        price="$10/mo."
+                        includesText="Includes:"
+                        features={['meat']}
+                        buttonText="Get Meat"
+                        isSpanRow={true}
+                        isHovered={hoveredCard === 'meat'}
+                        onHover={setHoveredCard}
+                    />
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
 </body>
 </html>
